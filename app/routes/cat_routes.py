@@ -26,22 +26,6 @@ def get_all_cats():
     cats_response = [cat.to_dict() for cat in cats]
     return cats_response
 
-
-# @cats_bp.get("")
-# def get_all_cats():
-#     results_list = []
-
-#     for cat in cats:
-#         results_list.append(cat.to_dict())
-    
-#     return results_list
-
-# @cats_bp.get("/<cat_id>")
-# def get_one_cat(cat_id):
-#     cat = validate_cat(cat_id)
-#     return cat.to_dict(), 200
-
-
 def validate_cat(cat_id):
     try:
         cat_id = int(cat_id)
