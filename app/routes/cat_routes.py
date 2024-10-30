@@ -2,7 +2,7 @@ from flask import Blueprint, abort, make_response, request, Response
 from ..db import db
 from app.models.cat import Cat
 
-cats_bp = Blueprint("cats_bp", __name__, url_prefix="/cats")
+cats_bp = Blueprint("cats_bp", __name__¸, url_prefix="/cats")
 
 @cats_bp.post("")
 def create_cat():
@@ -20,7 +20,26 @@ def create_cat():
 
 @cats_bp.get("")
 def get_all_cats():
-    query = db.select(Cat).order_by(Cat.id)
+
+    query = db.select(Cat)
+
+    name_param = request.args.get("name")
+    if name_param:
+        # restrict to matching cat
+        query = query.where(Cat.name == name_param)
+
+    color_param = request.args.get("color")
+    if color_param:
+        # restrict to matching cat
+        query = query.where(Cat.color.ilike(f"%{color_param}%"))
+
+    personality_param = request.args.get("personality")
+    if personality_param:
+        # restrict to matching cat
+        query = query.where(Cat.personality.ilike(f"%{personality_param}%"))
+
+    query = query.order_by(Cat.id)
+
     cats = db.session.scalars(query)
 
     cats_response = [cat.to_dict() for cat in cats]
