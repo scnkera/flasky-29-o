@@ -2,7 +2,7 @@ from flask import Blueprint, abort, make_response, request, Response
 from ..db import db
 from app.models.cat import Cat
 
-cats_bp = Blueprint("cats_bp", __name__¸, url_prefix="/cats")
+cats_bp = Blueprint("cats_bp", __name__, url_prefix="/cats")
 
 @cats_bp.post("")
 def create_cat():
