@@ -1,16 +1,16 @@
 from flask import Blueprint, abort, make_response, request, Response
 from ..db import db
 from app.models.cat import Cat
+from .route_utilities import validate_model
 
 cats_bp = Blueprint("cats_bp", __name__, url_prefix="/cats")
 
 @cats_bp.post("")
 def create_cat():
     request_body = request.get_json()
-
+    
     try:
         new_cat = Cat.from_dict(request_body)
-
     except KeyError as e:
         response = {"message": f"Invalid request: missing error {e.args[0]}"}
         abort(make_response(response, 400))
@@ -76,17 +76,3 @@ def delete_cat(cat_id):
 
     return Response(status=204, mimetype="application/json")
 
-
-def validate_model(cls, model_id):
-    try:
-        model_id = int(model_id)
-    except:
-        abort(make_response({"message":f"{cls.__name__} {model_id} invalid"}, 400))
-    
-    query = db.select(cls).where(cls.id == model_id)
-    model = db.session.scalar(query)
-
-    if not model:
-        abort(make_response({ "message": f"{cls.__name__} {model_id} not found"}, 404))
-    
-    return model
