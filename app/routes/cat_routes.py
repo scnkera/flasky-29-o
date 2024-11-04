@@ -8,18 +8,19 @@ cats_bp = Blueprint("cats_bp", __name__, url_prefix="/cats")
 @cats_bp.post("")
 def create_cat():
     request_body = request.get_json()
-    
+
     try:
         new_cat = Cat.from_dict(request_body)
     except KeyError as e:
-        response = {"message": f"Invalid request: missing error {e.args[0]}"}
+        response = {"message": f"Invalid request: missing {e.args[0]}"}
         abort(make_response(response, 400))
-    
+
     db.session.add(new_cat)
     db.session.commit()
 
     response = new_cat.to_dict()
     return response, 201
+    
 
 @cats_bp.get("")
 def get_all_cats():
@@ -50,13 +51,13 @@ def get_all_cats():
 
 @cats_bp.get("/<cat_id>")
 def get_single_cat(cat_id):
-    cat = Cat.validate_model(Cat, cat_id)
+    cat = validate_model(Cat,cat_id)
 
     return cat.to_dict()
 
 @cats_bp.put("/<cat_id>")
 def update_cat(cat_id):
-    cat = validate_model(Cat, cat_id)
+    cat = validate_model(Cat,cat_id)
     request_body = request.get_json()
 
     cat.name = request_body["name"]
@@ -75,4 +76,3 @@ def delete_cat(cat_id):
     db.session.commit()
 
     return Response(status=204, mimetype="application/json")
-
