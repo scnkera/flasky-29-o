@@ -1,61 +1,26 @@
 from flask import Blueprint, abort, make_response, request, Response
 from ..db import db
 from app.models.cat import Cat
-from .route_utilities import validate_model
+from .route_utilities import validate_model, create_model, get_models_with_filters
 
-cats_bp = Blueprint("cats_bp", __name__, url_prefix="/cats")
+bp = Blueprint("cats_bp", __name__, url_prefix="/cats")
 
-@cats_bp.post("")
+@bp.post("")
 def create_cat():
     request_body = request.get_json()
-
-    try:
-        new_cat = Cat.from_dict(request_body)
-    except KeyError as e:
-        response = {"message": f"Invalid request: missing {e.args[0]}"}
-        abort(make_response(response, 400))
-
-    db.session.add(new_cat)
-    db.session.commit()
-
-    response = new_cat.to_dict()
-    return response, 201
+    return create_model(Cat, request_body)
     
 
-@cats_bp.get("")
+@bp.get("")
 def get_all_cats():
+    return get_models_with_filters(Cat, request.args)
 
-    query = db.select(Cat)
-
-    name_param = request.args.get("name")
-    if name_param:
-        # restrict to matching cat
-        query = query.where(Cat.name == name_param)
-
-    color_param = request.args.get("color")
-    if color_param:
-        # restrict to matching cat
-        query = query.where(Cat.color.ilike(f"%{color_param}%"))
-
-    personality_param = request.args.get("personality")
-    if personality_param:
-        # restrict to matching cat
-        query = query.where(Cat.personality.ilike(f"%{personality_param}%"))
-
-    query = query.order_by(Cat.id)
-
-    cats = db.session.scalars(query)
-
-    cats_response = [cat.to_dict() for cat in cats]
-    return cats_response
-
-@cats_bp.get("/<cat_id>")
+@bp.get("/<cat_id>")
 def get_single_cat(cat_id):
     cat = validate_model(Cat,cat_id)
-
     return cat.to_dict()
 
-@cats_bp.put("/<cat_id>")
+@bp.put("/<cat_id>")
 def update_cat(cat_id):
     cat = validate_model(Cat,cat_id)
     request_body = request.get_json()
@@ -68,7 +33,7 @@ def update_cat(cat_id):
 
     return Response(status=204, mimetype="application/json")
 
-@cats_bp.delete("/<cat_id>")
+@bp.delete("/<cat_id>")
 def delete_cat(cat_id):
     cat = validate_model(Cat, cat_id)
 
